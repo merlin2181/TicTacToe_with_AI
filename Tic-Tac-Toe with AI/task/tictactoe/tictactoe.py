@@ -17,7 +17,7 @@ class TicTacToe:
         self.move = 0
         self.player1 = None
         self.player2 = None
-        self.board = {(i, j): " " for i in range(1, 4) for j in range(1, 4)}
+        self.board = {(j, i): " " for i in range(1, 4) for j in range(1, 4)}
         self.winner = None
         self.draw = None
 
@@ -73,9 +73,9 @@ class TicTacToe:
         Outputs the current board to the screen
         """
         board_output = f"---------\n" \
-                       f"| {self.board[(3, 1)]} {self.board[(3, 2)]} {self.board[(3, 3)]} |\n" \
-                       f"| {self.board[(2, 1)]} {self.board[(2, 2)]} {self.board[(2, 3)]} |\n" \
-                       f"| {self.board[(1, 1)]} {self.board[(1, 2)]} {self.board[(1, 3)]} |\n" \
+                       f"| {self.board[(1, 3)]} {self.board[(2, 3)]} {self.board[(3, 3)]} |\n" \
+                       f"| {self.board[(1, 2)]} {self.board[(2, 2)]} {self.board[(3, 2)]} |\n" \
+                       f"| {self.board[(1, 1)]} {self.board[(2, 1)]} {self.board[(3, 1)]} |\n" \
                        f"---------"
         print(board_output)
 
@@ -197,11 +197,11 @@ class TicTacToe:
         items = list(self.board.items())
         moves = ['X', 'O']
         for move in moves:
-            # Checks columns
+            # Checks rows
             for i in range(3):
                 if items[i][1] == move and items[i][1] == items[i + 3][1] == items[i + 6][1]:
                     self.winner = items[i][1]
-            # Checks rows
+            # Checks columns
             for i in range(0, 8, 3):
                 if items[i][1] == move and items[i][1] == items[i + 1][1] == items[i + 2][1]:
                     self.winner = items[i][1]
@@ -234,7 +234,7 @@ class TicTacToe:
         Method that resets the following variables to begin a new game
         """
         self.move = 0
-        self.board = {(i, j): " " for i in range(1, 4) for j in range(1, 4)}
+        self.board = {(j, i): " " for i in range(1, 4) for j in range(1, 4)}
         self.draw = None
         self.winner = None
 
