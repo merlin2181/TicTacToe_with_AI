@@ -1,5 +1,12 @@
-# write your code here
-from collections import OrderedDict
+"""
+A more involved game of Tic Tac Toe that offers the ability to play against the computer using
+two different difficulties: easy and hard
+
+To play: type "start" followed by either user, easy or medium.
+Example: 'start easy user' ==> start the game, player1 is easy computer, player2 is the user
+Example: 'start medium medium' ==> start the game, player1 and player2 are both medium
+          difficulty computer players
+"""
 import random
 import sys
 
@@ -10,7 +17,7 @@ class TicTacToe:
         self.move = 0
         self.player1 = None
         self.player2 = None
-        self.board = OrderedDict({(i, j): " " for i in range(1, 4) for j in range(1, 4)})
+        self.board = {(i, j): " " for i in range(1, 4) for j in range(1, 4)}
         self.winner = None
         self.draw = None
 
@@ -19,7 +26,7 @@ class TicTacToe:
         Method that starts the game by having the user choose to play against computer,
         another user or have the computer play itself
         """
-        player_choice = ['user', 'easy']
+        player_choice = ['user', 'easy', 'medium']
         while True:
             choice = input('Input Command: ').split()
             if choice[0] == 'exit':
@@ -53,13 +60,11 @@ class TicTacToe:
                 continue
             elif self.winner is not None:
                 print(f'{self.winner} wins')
-                self.board = OrderedDict({(i, j): " " for i in range(1, 4) for j in range(1, 4)})
-                self.winner = None
+                self.reset_game()
                 break
             elif self.draw is not None:
                 print('Draw')
-                self.board = OrderedDict({(i, j): " " for i in range(1, 4) for j in range(1, 4)})
-                self.draw = None
+                self.reset_game()
                 break
         self.pick_player()
 
@@ -81,7 +86,9 @@ class TicTacToe:
         if player[0] == 'user':
             return self.user_move(player[1])
         elif player[0] == 'easy':
-            return self.computer_move(player[1])
+            return self.computer_move_easy(player[1])
+        elif player[0] == 'medium':
+            return self.computer_move_medium(player[1])
 
     def user_move(self, char):
         """
@@ -97,18 +104,72 @@ class TicTacToe:
                 flag = False
         self.board[(nums[0], nums[1])] = char
 
-    def computer_move(self, char):
+    def computer_move_easy(self, char, level='easy'):
         """
         method that lets the computer choose a move by creating a list of empty cells and
         randomly choosing a cell from that list
         """
-        random.seed()
-        print('Making move level "easy"')
+        random.seed()  # reseed everytime to get as random a result as possible
+        print(f'Making move level "{level}"')
         comp_move = []
         for key, value in self.board.items():
             if value == ' ':
                 comp_move.append(key)
         self.board[random.choice(comp_move)] = char
+
+    def computer_move_medium(self, char):
+        """
+        Method that increases the difficulty of playing against the computer.  This method
+        actively looks for offensive and defensive moves.
+        """
+        if char == 'X':
+            opp_char = 'O'
+        else:
+            opp_char = 'X'
+        space = 0
+        items = list(self.board.items())
+        for item in items:
+            if item[1] == ' ':
+                space += 1
+        if space > 6:
+            self.computer_move_easy(char, 'medium')
+        else:
+            offense_move = self.potential_move(items, char)
+            if offense_move is None:
+                defense_move = self.potential_move(items, opp_char)
+                if defense_move is None:
+                    self.computer_move_easy(char, 'medium')
+                else:
+                    print('Making move level "medium"')
+                    self.board[defense_move] = char
+            else:
+                print('Making move level "medium"')
+                self.board[offense_move] = char
+
+    def potential_move(self, item, char):
+        """
+        Method that goes through every column, row and diagonal to determine an offensive or
+        defensive move.
+        """
+        for i in range(3):
+            check_board = [item[i], item[i + 3], item[i + 6]]
+            pos = self._analyze_board(check_board, char)
+            if pos:
+                return pos
+        for i in range(0, 8, 3):
+            check_board = [item[i], item[i + 1], item[i + 2]]
+            pos = self._analyze_board(check_board, char)
+            if pos:
+                return pos
+        check_board = [item[0], item[4], item[8]]
+        pos = self._analyze_board(check_board, char)
+        if pos:
+            return pos
+        check_board = [item[2], item[4], item[6]]
+        pos = self._analyze_board(check_board, char)
+        if pos:
+            return pos
+        return None
 
     def check_coordinates(self, numbers):
         """
@@ -167,6 +228,28 @@ class TicTacToe:
                 ohs += 1
         if exs + ohs == 9:
             self.draw = True
+
+    def reset_game(self):
+        """
+        Method that resets the following variables to begin a new game
+        """
+        self.move = 0
+        self.board = {(i, j): " " for i in range(1, 4) for j in range(1, 4)}
+        self.draw = None
+        self.winner = None
+
+    @staticmethod
+    def _analyze_board(segment, char):
+        """
+        Static method that analyzes the given segment list and checks whether a move can complete
+        three Xs or three Os and returns where to put that character in the board.
+        """
+        temp_hold = [segment[i][1] for i in range(3)]
+        if temp_hold.count(char) == 2 and ' ' in temp_hold:
+            pos = segment[temp_hold.index(' ')][0]
+            if pos:
+                return pos
+        return None
 
 
 if __name__ == '__main__':
